@@ -1,7 +1,7 @@
-export const Response=(res,statusCode,success,mnessage,data)=>{
+export const Response=(res,statusCode,success,message,data)=>{
     return res.status(statusCode).json({
         success,
         message,
-        ...Response(data && {data}),
+        ...(data && {data}),
     })
 }

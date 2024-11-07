@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -76,6 +77,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  loginOtp:{
+    type:Number,
+  },
+  loginOtpExpire:{
+    type:Number,
+  },
   otp: {
     type: Number,
   },
@@ -124,7 +131,7 @@ const userSchema = new mongoose.Schema({
 }
 );
 
-
+//password hashing 
 userSchema.pre('save',async function (next) {
   if(!this.isModified('password')){
     next();
@@ -133,6 +140,22 @@ userSchema.pre('save',async function (next) {
   this.password=await bcrypt.hash(this.password,salt);
   next();
 });
+
+
+//pasword matching 
+userSchema.methods.matchPassword=async function(enteredPassword){
+  return await bcrypt.compare(enteredPassword,this.password)
+}
+
+//this is for JWT authentication 
+
+userSchema.methods.generateToken=async function () {
+  return jwt.sign({id:this._id},process.env.JWT_SECRET,{
+    expiresIn:process.env.JWT_SECRET
+  })
+  
+}
+
 
 const User=mongoose.model('User_Soc',userSchema)
 //pehle wala user{model} wo hai jo schema bna rha hai  dusra user{collection} yeh hai ki new user banega wo iss se store hoga
